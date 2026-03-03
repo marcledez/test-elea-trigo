@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards – Trigonométrie 3ème</title>
+<style>
+  :root {
+    --blue:    #3b82f6;
+    --indigo:  #6366f1;
+    --green:   #22c55e;
+    --red:     #ef4444;
+    --orange:  #f97316;
+    --bg:      #f0f4ff;
+    --card-bg: #ffffff;
+    --text:    #1e293b;
+    --muted:   #64748b;
+    --shadow:  0 8px 32px rgba(99,102,241,.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #fff;
+    padding: 2rem 1rem 1.5rem;
+    text-align: center;
+  }
+  header h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -.5px; }
+  header p  { margin-top: .4rem; opacity: .85; font-size: .95rem; }
+
+  /* ── LEVEL TABS ── */
+  .levels {
+    display: flex;
+    justify-content: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    padding: 1.4rem 1rem .6rem;
+  }
+  .level-btn {
+    padding: .5rem 1.2rem;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    font-weight: 700;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: all .2s;
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+  .level-btn.active, .level-btn:hover {
+    background: var(--indigo);
+    color: #fff;
+    border-color: var(--indigo);
+  }
+  .level-badge {
+    display: inline-block;
+    margin-left: .4rem;
+    background: rgba(255,255,255,.25);
+    border-radius: 999px;
+    padding: .05rem .45rem;
+    font-size: .75rem;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    max-width: 680px;
+    margin: .6rem auto 0;
+    padding: 0 1.2rem;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .82rem;
+    color: var(--muted);
+    margin-bottom: .3rem;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #dde4f5;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--indigo));
+    border-radius: 999px;
+    transition: width .4s ease;
+  }
+
+  /* ── CARD SCENE ── */
+  .scene {
+    perspective: 1200px;
+    max-width: 640px;
+    margin: 1.6rem auto 0;
+    padding: 0 1.2rem;
+    cursor: pointer;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,0,.2,1);
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    min-height: 300px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.8rem;
+    box-shadow: var(--shadow);
+  }
+  .card-front {
+    background: var(--card-bg);
+    border: 2px solid #e0e7ff;
+  }
+  .card-back {
+    background: linear-gradient(145deg, #eef2ff, #f5f3ff);
+    border: 2px solid #c7d2fe;
+    transform: rotateY(180deg);
+  }
+
+  .card-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+  }
+  .card-question {
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .card-hint {
+    margin-top: 1rem;
+    font-size: .85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* triangle SVG zone */
+  .triangle-zone { margin: 1rem 0; }
+
+  .card-answer {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--indigo);
+    line-height: 1.5;
+  }
+  .card-explanation {
+    margin-top: .9rem;
+    font-size: .9rem;
+    color: #4338ca;
+    text-align: center;
+    line-height: 1.5;
+    background: #e0e7ff;
+    border-radius: 10px;
+    padding: .7rem 1rem;
+    width: 100%;
+  }
+
+  .flip-hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: .82rem;
+    margin-top: .8rem;
+  }
+  .flip-hint span { font-size: 1.1rem; }
+
+  /* ── SELF-CHECK BUTTONS ── */
+  .self-check {
+    display: none;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 640px;
+    margin: 1rem auto 0;
+    padding: 0 1.2rem;
+  }
+  .self-check.visible { display: flex; }
+  .check-btn {
+    flex: 1;
+    padding: .7rem 1rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .check-btn:active { transform: scale(.96); }
+  .btn-good  { background: var(--green);  color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,.3); }
+  .btn-again { background: var(--orange); color: #fff; box-shadow: 0 4px 14px rgba(249,115,22,.3); }
+
+  /* ── NAV BUTTONS ── */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 640px;
+    margin: 1rem auto;
+    padding: 0 1.2rem;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: .65rem 1rem;
+    border-radius: 12px;
+    border: 2px solid #c7d2fe;
+    background: #fff;
+    color: var(--indigo);
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .nav-btn:hover { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+  .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+  #btn-shuffle {
+    flex: 0;
+    padding: .65rem 1.1rem;
+    border-radius: 12px;
+    border: 2px solid #fde68a;
+    background: #fffbeb;
+    color: #92400e;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  #btn-shuffle:hover { background: #fef3c7; }
+
+  /* ── SCORE SUMMARY ── */
+  .summary {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem 1.5rem;
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+  }
+  .summary.visible { display: flex; }
+  .summary h2 { font-size: 1.6rem; margin-bottom: .5rem; }
+  .summary .score { font-size: 3.5rem; font-weight: 900; color: var(--indigo); }
+  .summary p { color: var(--muted); margin-top: .4rem; }
+  .summary button {
+    margin-top: 1.4rem;
+    padding: .7rem 2rem;
+    border-radius: 12px;
+    background: var(--indigo);
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  /* ── FORMULA BOX (reference) ── */
+  .formula-ref {
+    max-width: 640px;
+    margin: 0 auto 1.5rem;
+    padding: 0 1.2rem;
+  }
+  details {
+    background: #fff;
+    border: 2px solid #e0e7ff;
+    border-radius: 14px;
+    padding: .8rem 1.2rem;
+  }
+  summary {
+    font-weight: 700;
+    color: var(--indigo);
+    cursor: pointer;
+    font-size: .9rem;
+  }
+  .formula-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .7rem;
+    margin-top: .9rem;
+  }
+  .formula-item {
+    background: #eef2ff;
+    border-radius: 10px;
+    padding: .6rem .8rem;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 600;
+    color: #3730a3;
+    line-height: 1.6;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.4rem; }
+    .card-answer { font-size: 1.2rem; }
+    .formula-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📐 Trigonométrie – Triangle Rectangle</h1>
+  <p>Entraîne-toi avec les flashcards · Classe de 3ème</p>
+</header>
+
+<!-- LEVEL SELECTOR -->
+<div class="levels">
+  <button class="level-btn active" onclick="setLevel(0)">🟢 Niveau 1 <span class="level-badge">Définitions</span></button>
+  <button class="level-btn" onclick="setLevel(1)">🟡 Niveau 2 <span class="level-badge">Calculs</span></button>
+  <button class="level-btn" onclick="setLevel(2)">🔴 Niveau 3 <span class="level-badge">Problèmes</span></button>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span id="prog-text">Carte 1 / 1</span>
+    <span id="score-text">✅ 0 · ❌ 0</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="scene" id="scene" onclick="flipCard()">
+  <div class="card-inner" id="card-inner">
+    <div class="card-face card-front">
+      <div class="card-label">❓ Question</div>
+      <div id="question-text" class="card-question"></div>
+      <div id="triangle-svg" class="triangle-zone"></div>
+      <div id="hint-text" class="card-hint"></div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-label">💡 Réponse</div>
+      <div id="answer-text" class="card-answer"></div>
+      <div id="expl-text" class="card-explanation"></div>
+    </div>
+  </div>
+</div>
+<p class="flip-hint"><span>👆</span> Clique sur la carte pour la retourner</p>
+
+<!-- SELF CHECK -->
+<div class="self-check" id="self-check">
+  <button class="check-btn btn-again" onclick="markCard(false)">❌ À revoir</button>
+  <button class="check-btn btn-good"  onclick="markCard(true)">✅ Je savais !</button>
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button class="nav-btn" id="btn-prev" onclick="prevCard()">← Précédente</button>
+  <button id="btn-shuffle" onclick="shuffle()">🔀</button>
+  <button class="nav-btn" id="btn-next" onclick="nextCard()">Suivante →</button>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary" id="summary">
+  <h2>🎉 Série terminée !</h2>
+  <div class="score" id="summary-score"></div>
+  <p id="summary-msg"></p>
+  <button onclick="restart()">🔄 Recommencer</button>
+</div>
+
+<!-- FORMULA REFERENCE -->
+<div class="formula-ref">
+  <details>
+    <summary>📋 Aide-mémoire – Formules du cours</summary>
+    <div class="formula-grid">
+      <div class="formula-item">sin(α) = côté opposé / hypoténuse</div>
+      <div class="formula-item">cos(α) = côté adjacent / hypoténuse</div>
+      <div class="formula-item">tan(α) = côté opposé / côté adjacent</div>
+      <div class="formula-item">sin²(α) + cos²(α) = 1</div>
+      <div class="formula-item">tan(α) = sin(α) / cos(α)</div>
+      <div class="formula-item">sin(30°)=0,5 · cos(60°)=0,5</div>
+      <div class="formula-item">sin(45°)=√2/2 · cos(45°)=√2/2</div>
+      <div class="formula-item">sin(60°)=√3/2 · cos(30°)=√3/2</div>
+      <div class="formula-item">tan(30°)=√3/3 · tan(45°)=1 · tan(60°)=√3</div>
+    </div>
+  </details>
+</div>
+
+<script>
+/* ========================================================
+   DATA – 3 levels
+   ======================================================== */
+const LEVELS = [
+  // ── LEVEL 0 : Définitions & identification ──────────────
+  [
+    {
+      q: "Dans un triangle rectangle en C, par rapport à l'angle α en A, quel côté est l'hypoténuse ?",
+      svg: makeSVG("BC","AC","AB","α",""),
+      hint: "L'hypoténuse est toujours en face de l'angle droit.",
+      a: "AB",
+      expl: "L'hypoténuse est le côté opposé à l'angle droit (en C). C'est donc AB."
+    },
+    {
+      q: "Donne la définition du cosinus de l'angle α dans un triangle rectangle.",
+      svg: "",
+      hint: "Pense à SOH-CAH-TOA : CA = Cosinus → Adjacent / Hypoténuse",
+      a: "cos(α) = côté adjacent / hypoténuse",
+      expl: "cos(α) = (longueur du côté adjacent à α) / (longueur de l'hypoténuse)"
+    },
+    {
+      q: "Donne la définition du sinus de l'angle α dans un triangle rectangle.",
+      svg: "",
+      hint: "SOH : Sinus = Opposé / Hypoténuse",
+      a: "sin(α) = côté opposé / hypoténuse",
+      expl: "sin(α) = (longueur du côté opposé à α) / (longueur de l'hypoténuse)"
+    },
+    {
+      q: "Donne la définition de la tangente de l'angle α dans un triangle rectangle.",
+      svg: "",
+      hint: "TOA : Tangente = Opposé / Adjacent",
+      a: "tan(α) = côté opposé / côté adjacent",
+      expl: "tan(α) = (longueur du côté opposé à α) / (longueur du côté adjacent à α)"
+    },
+    {
+      q: "Dans le triangle rectangle ci-dessous (angle droit en C), par rapport à l'angle α en A, quel est le côté OPPOSÉ ?",
+      svg: makeSVG("BC","AC","AB","α",""),
+      hint: "Le côté opposé est celui qui ne touche PAS l'angle α.",
+      a: "BC",
+      expl: "Le côté opposé à α (en A) est BC. Il ne touche pas le sommet A."
+    },
+    {
+      q: "Dans le triangle rectangle (angle droit en C), par rapport à l'angle α en A, quel est le côté ADJACENT ?",
+      svg: makeSVG("BC","AC","AB","α",""),
+      hint: "Adjacent = qui 'touche' l'angle α sans être l'hypoténuse.",
+      a: "AC",
+      expl: "AC touche l'angle α mais n'est pas l'hypoténuse → c'est le côté adjacent."
+    },
+    {
+      q: "Quelle est la valeur exacte de sin(30°) ?",
+      svg: "",
+      hint: "C'est une valeur à connaître par cœur.",
+      a: "sin(30°) = 1/2 = 0,5",
+      expl: "Dans un triangle rectangle avec un angle de 30°, l'opposé vaut la moitié de l'hypoténuse."
+    },
+    {
+      q: "Quelle est la valeur exacte de cos(60°) ?",
+      svg: "",
+      hint: "sin(30°) = cos(60°) : les angles sont complémentaires !",
+      a: "cos(60°) = 1/2 = 0,5",
+      expl: "cos(60°) = sin(30°) = 0,5 car 30° + 60° = 90°."
+    },
+    {
+      q: "Quelle est la valeur exacte de tan(45°) ?",
+      svg: "",
+      hint: "Dans un triangle isocèle rectangle, les deux côtés de l'angle droit sont égaux.",
+      a: "tan(45°) = 1",
+      expl: "tan(45°) = opposé/adjacent = 1 car les deux cathètes sont égales."
+    },
+    {
+      q: "Comment s'appelle la relation fondamentale de la trigonométrie ?",
+      svg: "",
+      hint: "Elle relie sin et cos pour tout angle.",
+      a: "sin²(α) + cos²(α) = 1",
+      expl: "C'est une conséquence directe du théorème de Pythagore appliqué à un triangle rectangle unitaire."
+    },
+  ],
+  // ── LEVEL 1 : Calculs directs ────────────────────────────
+  [
+    {
+      q: "Dans un triangle rectangle ABC (angle droit en C), BC = 6 cm et AB = 10 cm. Calcule sin(α) où α = angle en A.",
+      svg: makeSVG("6 cm","?","10 cm","α",""),
+      hint: "sin(α) = opposé / hypoténuse. BC est opposé à α, AB est l'hypoténuse.",
+      a: "sin(α) = 6/10 = 0,6",
+      expl: "sin(α) = BC/AB = 6/10 = 0,6 → α = arcsin(0,6) ≈ 36,9°"
+    },
+    {
+      q: "Dans un triangle rectangle ABC (angle droit en C), AC = 8 cm et AB = 10 cm. Calcule cos(α) où α = angle en A.",
+      svg: makeSVG("?","8 cm","10 cm","α",""),
+      hint: "cos(α) = adjacent / hypoténuse. AC est adjacent à α.",
+      a: "cos(α) = 8/10 = 0,8",
+      expl: "cos(α) = AC/AB = 8/10 = 0,8 → α ≈ 36,9°"
+    },
+    {
+      q: "Dans un triangle rectangle ABC (angle droit en C), BC = 5 cm et AC = 12 cm. Calcule tan(α) où α = angle en A.",
+      svg: makeSVG("5 cm","12 cm","?","α",""),
+      hint: "tan(α) = opposé / adjacent.",
+      a: "tan(α) = 5/12 ≈ 0,417",
+      expl: "tan(α) = BC/AC = 5/12 ≈ 0,417 → α ≈ 22,6°"
+    },
+    {
+      q: "On sait que sin(α) = 0,6 et que l'hypoténuse vaut 15 cm. Quelle est la longueur du côté opposé à α ?",
+      svg: "",
+      hint: "sin(α) = opposé / hypoténuse → opposé = sin(α) × hypoténuse",
+      a: "Opposé = 0,6 × 15 = 9 cm",
+      expl: "Opposé = sin(α) × hypoténuse = 0,6 × 15 = 9 cm"
+    },
+    {
+      q: "On sait que cos(35°) ≈ 0,819 et que l'hypoténuse vaut 20 cm. Calcule le côté adjacent à l'angle de 35°.",
+      svg: "",
+      hint: "cos(35°) = adjacent / hypoténuse → adjacent = cos(35°) × hypoténuse",
+      a: "Adjacent ≈ 0,819 × 20 ≈ 16,4 cm",
+      expl: "Adjacent = cos(35°) × 20 ≈ 0,819 × 20 ≈ 16,38 cm"
+    },
+    {
+      q: "Calcule l'angle α si tan(α) = 3/4. (donne la valeur arrondie à 0,1°)",
+      svg: "",
+      hint: "Utilise la touche arctan (ou tan⁻¹) de ta calculatrice.",
+      a: "α = arctan(3/4) ≈ 36,9°",
+      expl: "tan(α) = 0,75 → α = arctan(0,75) ≈ 36,87° ≈ 36,9°"
+    },
+    {
+      q: "Dans un triangle rectangle (∠C = 90°), AB = 13 cm et cos(α) = 5/13 (α en A). Calcule AC.",
+      svg: "",
+      hint: "cos(α) = AC/AB → AC = cos(α) × AB",
+      a: "AC = (5/13) × 13 = 5 cm",
+      expl: "AC = cos(α) × AB = (5/13) × 13 = 5 cm"
+    },
+    {
+      q: "Quelle est la valeur exacte de sin(60°) ?",
+      svg: "",
+      hint: "Pense au triangle équilatéral coupé en deux.",
+      a: "sin(60°) = √3/2 ≈ 0,866",
+      expl: "Dans un triangle 30-60-90 d'hypoténuse 2 : l'opposé à 60° vaut √3 → sin(60°) = √3/2."
+    },
+    {
+      q: "Si sin²(α) = 0,36, quelle est la valeur de cos²(α) ?",
+      svg: "",
+      hint: "Utilise la relation sin²(α) + cos²(α) = 1",
+      a: "cos²(α) = 1 − 0,36 = 0,64",
+      expl: "sin²(α) + cos²(α) = 1 → cos²(α) = 1 − 0,36 = 0,64 → cos(α) = 0,8"
+    },
+    {
+      q: "Calcule l'angle β si sin(β) = 0,5. Donne toutes les valeurs possibles entre 0° et 90°.",
+      svg: "",
+      hint: "C'est une valeur remarquable !",
+      a: "β = 30°",
+      expl: "sin(30°) = 0,5 est une valeur exacte à connaître. β = arcsin(0,5) = 30°."
+    },
+  ],
+  // ── LEVEL 2 : Problèmes contextualisés ──────────────────
+  [
+    {
+      q: "Une échelle de 5 m est appuyée contre un mur vertical. Elle forme un angle de 65° avec le sol. À quelle hauteur atteint-elle le mur ? (cos(65°) ≈ 0,423 ; sin(65°) ≈ 0,906)",
+      svg: makeSVGLadder(),
+      hint: "Le sol, le mur et l'échelle forment un triangle rectangle. L'échelle = hypoténuse.",
+      a: "Hauteur ≈ 5 × sin(65°) ≈ 4,53 m",
+      expl: "sin(65°) = hauteur/5 → hauteur = 5 × 0,906 ≈ 4,53 m"
+    },
+    {
+      q: "Un avion est à 3 000 m d'altitude. L'angle d'élévation depuis le sol est de 40°. Quelle est la distance horizontale entre l'avion et l'observateur ? (tan(40°) ≈ 0,839)",
+      svg: "",
+      hint: "tan(40°) = altitude / distance horizontale → isoler la distance.",
+      a: "Distance ≈ 3000 / 0,839 ≈ 3575 m",
+      expl: "tan(40°) = 3000/d → d = 3000/tan(40°) ≈ 3000/0,839 ≈ 3575 m"
+    },
+    {
+      q: "Dans un triangle rectangle PQR (∠R = 90°), PQ = 25 cm et ∠P = 28°. Calcule QR. (sin(28°) ≈ 0,469)",
+      svg: "",
+      hint: "QR est le côté opposé à l'angle P. PQ est l'hypoténuse.",
+      a: "QR ≈ 25 × sin(28°) ≈ 11,7 cm",
+      expl: "sin(28°) = QR/PQ → QR = 25 × 0,469 ≈ 11,73 cm"
+    },
+    {
+      q: "Un toit en pente fait un angle de 22° avec l'horizontale. La longueur de la pente est 8 m. Quelle est la hauteur verticale du toit ? (sin(22°) ≈ 0,375)",
+      svg: "",
+      hint: "La pente = hypoténuse. La hauteur = côté opposé à l'angle.",
+      a: "Hauteur ≈ 8 × sin(22°) ≈ 3 m",
+      expl: "sin(22°) = hauteur/8 → hauteur = 8 × 0,375 = 3 m"
+    },
+    {
+      q: "On mesure l'ombre d'un arbre : elle mesure 12 m. L'angle du soleil avec le sol est 35°. Quelle est la hauteur de l'arbre ? (tan(35°) ≈ 0,700)",
+      svg: "",
+      hint: "L'ombre = côté adjacent, la hauteur = côté opposé.",
+      a: "Hauteur ≈ 12 × tan(35°) ≈ 8,4 m",
+      expl: "tan(35°) = hauteur/12 → hauteur = 12 × 0,700 = 8,4 m"
+    },
+    {
+      q: "ABC est rectangle en B. AB = 7 cm, BC = 24 cm. Calcule l'angle en A (arrondi à 0,1°). (tan⁻¹(24/7) = ?)",
+      svg: makeSVG("24 cm","7 cm","?","α",""),
+      hint: "tan(α) = opposé/adjacent = BC/AB. Puis utilise arctan.",
+      a: "α = arctan(24/7) ≈ arctan(3,43) ≈ 73,7°",
+      expl: "tan(α) = BC/AB = 24/7 ≈ 3,429 → α = arctan(3,429) ≈ 73,7°"
+    },
+    {
+      q: "Une rampe d'accès monte de 1,2 m sur une distance horizontale de 9 m. Quel angle fait-elle avec le sol ? (tan⁻¹(1,2/9) = ?)",
+      svg: "",
+      hint: "tan(α) = montée / distance horizontale.",
+      a: "α = arctan(1,2/9) = arctan(0,133) ≈ 7,6°",
+      expl: "tan(α) = 1,2/9 ≈ 0,133 → α ≈ arctan(0,133) ≈ 7,6°"
+    },
+    {
+      q: "Dans un triangle rectangle EFG (∠G=90°), ∠E = 53°, EG = 9 cm. Calcule FG et EF. (sin53°≈0,8 ; cos53°≈0,6 ; tan53°≈1,33)",
+      svg: "",
+      hint: "EG est adjacent à ∠E. Utilise tan pour FG, puis Pythagore ou cos pour EF.",
+      a: "FG ≈ 9 × tan(53°) ≈ 12 cm ; EF = EG/cos(53°) = 9/0,6 = 15 cm",
+      expl: "tan(53°)=FG/EG → FG=9×1,33≈12 cm ; cos(53°)=EG/EF → EF=9/0,6=15 cm. Vérif : 9²+12²=81+144=225=15² ✓"
+    },
+  ]
+];
+
+/* ========================================================
+   SVG HELPERS
+   ======================================================== */
+function makeSVG(opp, adj, hyp, angle, angle2) {
+  return `
+  <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#6366f1"/>
+      </marker>
+    </defs>
+    <!-- triangle -->
+    <polygon points="20,120 180,120 180,20" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
+    <!-- right angle mark -->
+    <rect x="168" y="108" width="12" height="12" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+    <!-- angle arc -->
+    <path d="M 44,120 A 24,24 0 0,0 20,100" fill="none" stroke="#ef4444" stroke-width="1.8"/>
+    <!-- labels -->
+    <text x="100" y="136" text-anchor="middle" font-size="12" fill="#374151" font-weight="600">${adj}</text>
+    <text x="188" y="75"  text-anchor="start"  font-size="12" fill="#374151" font-weight="600">${opp}</text>
+    <text x="88"  y="62"  text-anchor="middle" font-size="12" fill="#374151" font-weight="600">${hyp}</text>
+    <text x="46"  y="112" text-anchor="start"  font-size="12" fill="#ef4444" font-weight="700">${angle}</text>
+    <text x="12"  y="130" text-anchor="middle" font-size="11" fill="#6366f1">A</text>
+    <text x="185" y="130" text-anchor="middle" font-size="11" fill="#6366f1">C</text>
+    <text x="185" y="15"  text-anchor="middle" font-size="11" fill="#6366f1">B</text>
+  </svg>`;
+}
+
+function makeSVGLadder() {
+  return `
+  <svg width="160" height="140" viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10"  y1="130" x2="150" y2="130" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="60"  y1="130" x2="60"  y2="10"  stroke="#94a3b8" stroke-width="2"/>
+    <line x1="10"  y1="130" x2="60"  y2="10"  stroke="#f97316" stroke-width="3"/>
+    <rect x="53"  y="123"  width="7" height="7" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+    <path d="M 36,130 A 24,24 0 0,1 18,115" fill="none" stroke="#ef4444" stroke-width="1.8"/>
+    <text x="30" y="122" font-size="10" fill="#ef4444" font-weight="700">65°</text>
+    <text x="62" y="70"  font-size="10" fill="#374151">h = ?</text>
+    <text x="22" y="144" font-size="10" fill="#374151">sol</text>
+    <text x="65" y="75"  font-size="10" fill="#f97316">5 m</text>
+  </svg>`;
+}
+
+/* ========================================================
+   APP STATE
+   ======================================================== */
+let currentLevel = 0;
+let deck         = [];
+let idx          = 0;
+let flipped      = false;
+let good         = 0;
+let bad          = 0;
+
+function setLevel(lvl) {
+  currentLevel = lvl;
+  document.querySelectorAll('.level-btn').forEach((b,i) =>
+    b.classList.toggle('active', i === lvl));
+  restart();
+}
+
+function buildDeck() {
+  deck = [...LEVELS[currentLevel]];
+}
+
+function shuffle() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; good = 0; bad = 0;
+  showCard(); updateUI();
+}
+
+function showCard() {
+  if (idx >= deck.length) { showSummary(); return; }
+  const c = deck[idx];
+  document.getElementById('question-text').innerHTML = c.q;
+  document.getElementById('triangle-svg').innerHTML  = c.svg || '';
+  document.getElementById('hint-text').textContent   = c.hint ? '💡 ' + c.hint : '';
+  document.getElementById('answer-text').innerHTML   = c.a;
+  document.getElementById('expl-text').innerHTML     = c.expl;
+  // reset flip
+  flipped = false;
+  document.getElementById('card-inner').classList.remove('flipped');
+  document.getElementById('self-check').classList.remove('visible');
+  document.getElementById('summary').classList.remove('visible');
+  document.getElementById('scene').style.display = 'block';
+  updateUI();
+}
+
+function flipCard() {
+  if (idx >= deck.length) return;
+  flipped = !flipped;
+  document.getElementById('card-inner').classList.toggle('flipped', flipped);
+  if (flipped) document.getElementById('self-check').classList.add('visible');
+  else          document.getElementById('self-check').classList.remove('visible');
+}
+
+function markCard(isGood) {
+  if (isGood) good++; else bad++;
+  nextCard();
+}
+
+function nextCard() {
+  idx++;
+  showCard();
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; showCard(); }
+}
+
+function updateUI() {
+  const total = deck.length;
+  const done  = idx;
+  document.getElementById('prog-text').textContent  = `Carte ${Math.min(done+1,total)} / ${total}`;
+  document.getElementById('score-text').textContent = `✅ ${good} · ❌ ${bad}`;
+  document.getElementById('prog-fill').style.width  = (done/total*100) + '%';
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').disabled = idx >= deck.length;
+}
+
+function showSummary() {
+  document.getElementById('scene').style.display = 'none';
+  document.getElementById('self-check').classList.remove('visible');
+  const total   = deck.length;
+  const pct     = Math.round(good/total*100);
+  const summary = document.getElementById('summary');
+  summary.classList.add('visible');
+  document.getElementById('summary-score').textContent = pct + ' %';
+  let msg = '';
+  if (pct >= 90)      msg = '🏆 Excellent ! Tu maîtrises la trigonométrie !';
+  else if (pct >= 70) msg = '👍 Bien joué ! Encore un peu de pratique.';
+  else if (pct >= 50) msg = '💪 Continue ! Relis tes formules et recommence.';
+  else                msg = '📖 Revois le cours, tu vas y arriver !';
+  document.getElementById('summary-msg').textContent = msg + `  (${good}/${total} bonnes réponses)`;
+  updateUI();
+}
+
+function restart() {
+  buildDeck();
+  good = 0; bad = 0; idx = 0;
+  document.getElementById('summary').classList.remove('visible');
+  document.getElementById('scene').style.display = 'block';
+  showCard();
+}
+
+// INIT
+restart();
+</script>
+</body>
+</html>
